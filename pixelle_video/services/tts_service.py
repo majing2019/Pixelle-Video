@@ -293,22 +293,45 @@ class TTSService(ComfyBaseService):
             
             # If output_path provided and audio_path is URL, download to local
             if output_path and audio_path.startswith(('http://', 'https://')):
+                import asyncio
                 import httpx
                 import os
-                
+
                 # Ensure parent directory exists
                 os.makedirs(os.path.dirname(output_path), exist_ok=True)
-                
+
                 logger.info(f"Downloading audio from {audio_path} to {output_path}")
-                async with httpx.AsyncClient() as client:
-                    response = await client.get(audio_path)
-                    response.raise_for_status()
-                    
-                    with open(output_path, 'wb') as f:
-                        f.write(response.content)
-                
-                logger.info(f"✅ Generated audio (ComfyUI): {output_path}")
-                return output_path
+
+                # Use generous timeout (same as media download in frame_processor)
+                timeout = httpx.Timeout(connect=10.0, read=60, write=60, pool=60)
+                max_retries = 5
+                retry_delays = [1, 2, 4, 8, 16]  # seconds, exponential backoff
+
+                async with httpx.AsyncClient(timeout=timeout, trust_env=False) as client:
+                    for attempt in range(max_retries + 1):
+                        try:
+                            response = await client.get(audio_path)
+                            response.raise_for_status()
+
+                            with open(output_path, 'wb') as f:
+                                f.write(response.content)
+
+                            logger.info(f"✅ Generated audio (ComfyUI): {output_path}")
+                            return output_path
+
+                        except (httpx.ConnectError, httpx.ConnectTimeout, httpx.ReadTimeout) as e:
+                            if attempt < max_retries:
+                                delay = retry_delays[attempt]
+                                logger.warning(
+                                    f"  ⏳ Audio download failed ({type(e).__name__}), retrying in {delay}s "
+                                    f"(attempt {attempt + 1}/{max_retries}): {audio_path}"
+                                )
+                                await asyncio.sleep(delay)
+                                continue
+                            raise
+
+                logger.error(f"❌ Audio download failed after {max_retries} retries")
+                raise Exception(f"Failed to download audio after {max_retries} retries")
             
             logger.info(f"✅ Generated audio (ComfyUI): {audio_path}")
             return audio_path

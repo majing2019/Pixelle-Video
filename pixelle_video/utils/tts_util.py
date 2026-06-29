@@ -18,22 +18,29 @@ Currently, TTS service uses ComfyUI workflows only.
 """
 
 import asyncio
-import ssl
+import os
 import random
-import certifi
 import edge_tts as edge_tts_sdk
 from edge_tts.exceptions import NoAudioReceived
 from loguru import logger
 from aiohttp import WSServerHandshakeError, ClientResponseError
 
 
-# Use certifi bundle for SSL verification instead of disabling it
-_USE_CERTIFI_SSL = True
-
 # Retry configuration for Edge TTS (to handle 401 errors and NoAudioReceived)
 _RETRY_COUNT = 5           # Default retry count
 _RETRY_BASE_DELAY = 1.0     # Base retry delay in seconds (for exponential backoff)
 _MAX_RETRY_DELAY = 10.0     # Maximum retry delay in seconds
+
+# Proxy environment variable names that aiohttp reads via trust_env=True
+# We disable these for Edge TTS because:
+# 1. Microsoft's TTS is a free public service that doesn't need proxying
+# 2. Proxies (especially Clash/V2Ray) often interfere with WebSocket binary frames,
+#    causing NoAudioReceived — the WS connects and text frames flow, but audio
+#    binary frames get dropped/stripped by the proxy
+_PROXY_ENV_VARS = (
+    "HTTP_PROXY", "HTTPS_PROXY", "http_proxy", "https_proxy",
+    "ALL_PROXY", "all_proxy",
+)
 
 # Rate limiting configuration
 _REQUEST_DELAY = 0.5        # Minimum delay before each request (seconds)
@@ -44,21 +51,51 @@ _request_semaphore = None
 _semaphore_loop = None
 
 
+class _ProxySuppressor:
+    """
+    Context manager that temporarily removes proxy environment variables.
+
+    edge-tts uses aiohttp with trust_env=True (hardcoded in the library),
+    which automatically picks up HTTP_PROXY/HTTPS_PROXY/ALL_PROXY from the
+    environment. When a proxy like Clash/V2Ray is active, it can interfere
+    with WebSocket binary frames — the connection succeeds and text frames
+    (turn.start/turn.end) flow, but audio binary frames get stripped,
+    causing NoAudioReceived.
+
+    Usage:
+        with _ProxySuppressor():
+            await edge_tts_sdk.Communicate(...).stream()
+    """
+
+    def __init__(self):
+        self._saved = {}
+
+    def __enter__(self):
+        for var in _PROXY_ENV_VARS:
+            val = os.environ.pop(var, None)
+            if val is not None:
+                self._saved[var] = val
+
+    def __exit__(self, *args):
+        os.environ.update(self._saved)
+        self._saved.clear()
+
+
 def _get_request_semaphore():
     """Get or create request semaphore for current event loop"""
     global _request_semaphore, _semaphore_loop
-    
+
     try:
         current_loop = asyncio.get_running_loop()
     except RuntimeError:
         # No running loop
         return asyncio.Semaphore(_MAX_CONCURRENT_REQUESTS)
-    
+
     # If semaphore doesn't exist or belongs to different loop, create new one
     if _request_semaphore is None or _semaphore_loop != current_loop:
         _request_semaphore = asyncio.Semaphore(_MAX_CONCURRENT_REQUESTS)
         _semaphore_loop = current_loop
-    
+
     return _request_semaphore
 
 
@@ -140,17 +177,8 @@ async def edge_tts(
                 await asyncio.sleep(retry_delay)
             
             try:
-                # Create communicate instance with certifi SSL context
-                if _USE_CERTIFI_SSL:
-                    if attempt == 0:  # Only log info once
-                        logger.debug("Using certifi SSL certificates for secure Edge TTS connection")
-                    # Create SSL context with certifi bundle
-                    import certifi
-                    ssl_context = ssl.create_default_context(cafile=certifi.where())
-                else:
-                    ssl_context = None
-                
-                # Create communicate instance
+                # Create communicate instance (edge-tts manages its own SSL context
+                # internally via ssl.create_default_context(cafile=certifi.where()))
                 communicate = edge_tts_sdk.Communicate(
                     text=text,
                     voice=voice,
@@ -158,12 +186,17 @@ async def edge_tts(
                     volume=volume,
                     pitch=pitch,
                 )
-                
-                # Collect audio chunks
+
+                # Collect audio chunks with proxy suppression
+                # WebSocket is opened during stream(), so proxy env vars must be
+                # suppressed here — aiohttp's trust_env=True would otherwise route
+                # traffic through the system proxy, which often strips binary audio
+                # frames and causes NoAudioReceived.
                 audio_chunks = []
-                async for chunk in communicate.stream():
-                    if chunk["type"] == "audio":
-                        audio_chunks.append(chunk["data"])
+                with _ProxySuppressor():
+                    async for chunk in communicate.stream():
+                        if chunk["type"] == "audio":
+                            audio_chunks.append(chunk["data"])
                 
                 audio_data = b"".join(audio_chunks)
                 
@@ -301,8 +334,10 @@ async def list_voices(locale: str = None, retry_count: int = _RETRY_COUNT, retry
                 await asyncio.sleep(retry_delay)
             
             try:
-                # Get all voices (edge-tts handles SSL internally)
-                voices = await edge_tts_sdk.list_voices()
+                # Get all voices with proxy suppression
+                # (aiohttp trust_env=True would route through system proxy)
+                with _ProxySuppressor():
+                    voices = await edge_tts_sdk.list_voices()
                 
                 # Filter by locale if specified
                 if locale:

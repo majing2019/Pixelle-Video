@@ -483,14 +483,33 @@ class FrameProcessor:
             return url
         
         timeout = httpx.Timeout(connect=10.0, read=60, write=60, pool=60)
-        async with httpx.AsyncClient(timeout=timeout) as client:
-            response = await client.get(url)
-            response.raise_for_status()
-            
-            with open(output_path, 'wb') as f:
-                f.write(response.content)
-        
-        return output_path
+        max_retries = 5
+        retry_delays = [1, 2, 4, 8, 16]  # seconds, exponential backoff
+
+        async with httpx.AsyncClient(timeout=timeout, trust_env=False) as client:
+            for attempt in range(max_retries + 1):
+                try:
+                    response = await client.get(url)
+                    response.raise_for_status()
+
+                    with open(output_path, 'wb') as f:
+                        f.write(response.content)
+
+                    return output_path
+
+                except httpx.HTTPStatusError as e:
+                    if e.response.status_code == 404 and attempt < max_retries:
+                        delay = retry_delays[attempt]
+                        logger.warning(
+                            f"  ⏳ Media not ready yet (404), retrying in {delay}s "
+                            f"(attempt {attempt + 1}/{max_retries}): {url}"
+                        )
+                        import asyncio
+                        await asyncio.sleep(delay)
+                        continue
+                    raise
+
+        return output_path  # unreachable, but keeps linter happy
     
     async def _get_video_duration(self, video_path: str) -> float:
         """Get video duration in seconds"""
