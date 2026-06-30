@@ -1,0 +1,10 @@
+{
+  "source": "runninghub",
+  "workflow_id": "2071894432961622018",
+  "param_mappings": [
+    {"param_name": "prompt", "node_id": "18", "input_field": "prompt", "node_class_type": "RH_RhartImageG2TextToImage"},
+    {"param_name": "aspect_ratio", "node_id": "18", "input_field": "aspectRatio", "node_class_type": "RH_RhartImageG2TextToImage"},
+    {"param_name": "resolution", "node_id": "18", "input_field": "resolution", "node_class_type": "RH_RhartImageG2TextToImage"},
+    {"param_name": "seed", "node_id": "18", "input_field": "seed", "node_class_type": "RH_RhartImageG2TextToImage"}
+  ]
+}

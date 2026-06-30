@@ -1,0 +1,35 @@
+--- a/comfykit/comfyui/runninghub_executor.py
++++ b/comfykit/comfyui/runninghub_executor.py
+@@ -62,7 +62,7 @@
+
+-    async def execute_by_id(self, workflow_id: str, params: Dict[str, Any] = None) -> ExecuteResult:
++    async def execute_by_id(self, workflow_id: str, params: Dict[str, Any] = None, param_mappings: List[Dict[str, Any]] = None) -> ExecuteResult:
+         """Execute workflow on RunningHub platform by workflow ID directly
+
+         Supports unified simple parameter format like local ComfyUI!
+@@ -72,6 +72,10 @@
+             workflow_id: RunningHub workflow ID (numeric string)
+             params: Workflow parameters in SIMPLE format (same as local ComfyUI)
+                    Example: {"prompt": "a cat", "seed": 42}
++            param_mappings: Optional external param mappings (from local wrapper JSON)
++                   When WorkflowParser can't find DSL markers in the RunningHub workflow,
++                   these provide the mapping explicitly.
++                   Example: [{"param_name": "prompt", "node_id": "18", "input_field": "prompt"}]
+
+         Returns:
+             Execution result
+@@ -101,6 +105,14 @@
+
+             logger.info(f"Workflow parsed successfully: {len(metadata.params)} parameters found")
+
++            # Merge externally-provided param mappings (from local wrapper)
++            # Use this when the RunningHub workflow lacks DSL markers in node titles
++            if param_mappings:
++                from comfykit.comfyui.workflow_parser import WorkflowParamMapping
++                for m in param_mappings:
++                    mapping = WorkflowParamMapping(**m)
++                    metadata.mapping_info.param_mappings.append(mapping)
++                logger.info(f"Merged {len(param_mappings)} external param mappings")
++
+             # Convert simple parameters to RunningHub nodeInfoList format using metadata
+             node_info_list = await self._convert_params_to_node_info_list(metadata, params or {}, seed_changes)

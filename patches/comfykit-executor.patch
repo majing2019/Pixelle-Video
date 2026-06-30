@@ -1,0 +1,45 @@
+--- a/comfykit/executor.py
++++ b/comfykit/executor.py
+@@ -4,7 +4,7 @@
+ import re
+ import tempfile
+ from pathlib import Path
+-from typing import Any, Dict, Literal, Optional, Union
++from typing import Any, Dict, List, Literal, Optional, Union
+
+ from comfykit.comfyui.http_executor import HttpExecutor
+ from comfykit.comfyui.models import ExecuteResult
+@@ -250,11 +250,13 @@
+     async def execute(
+         self,
+         workflow: Union[str, Path],
+         params: Optional[Dict[str, Any]] = None,
++        param_mappings: Optional[List[Dict[str, Any]]] = None,
+     ) -> ExecuteResult:
+         """Execute a ComfyUI workflow - intelligently handles any workflow source
+
+         This method automatically detects the workflow type and uses the appropriate executor:
+         - RunningHub workflow ID (numeric string like "12345")
+         - Local file path (e.g. "workflow.json" or Path("workflow.json"))
+         - Remote URL (e.g. "https://example.com/workflow.json")
+         - RunningHub workflow file (contains _source: "runninghub")
+@@ -269,6 +271,9 @@
+
+                    ComfyKit automatically handles parameter mapping:
+                    - For local ComfyUI: applies params directly to workflow nodes
+                    - For RunningHub: converts to nodeInfoList format internally
++            param_mappings: Optional external param mappings for RunningHub workflows.
++                   Used when the workflow lacks DSL markers in node titles.
++                   Example: [{"param_name": "prompt", "node_id": "18", "input_field": "prompt"}]
+
+         Returns:
+             ExecuteResult: Structured execution result
+@@ -297,7 +302,7 @@
+         if self._is_runninghub_workflow_id(workflow_str):
+             logger.info(f"Detected RunningHub workflow ID: {workflow_str}")
+             executor = self._get_runninghub_executor()
+-            return await executor.execute_by_id(workflow_str, params or {})
++            return await executor.execute_by_id(workflow_str, params or {}, param_mappings=param_mappings)
+
+         # Case 2: URL - download and execute as local workflow
+         elif self._is_url(workflow_str):
