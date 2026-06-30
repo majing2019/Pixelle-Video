@@ -58,24 +58,35 @@ def render_style_config(pixelle_video):
         tts_config = comfyui_config["tts"]
         
         # Inference mode selection
+        mode_options = ["local", "doubao", "comfyui"]
         tts_mode = st.radio(
             tr("tts.inference_mode"),
-            ["local", "comfyui"],
+            mode_options,
             horizontal=True,
             format_func=lambda x: tr(f"tts.mode.{x}"),
-            index=0 if tts_config.get("inference_mode", "local") == "local" else 1,
+            index=mode_options.index(tts_config.get("inference_mode", "local")),
             key="tts_inference_mode"
         )
-        
+
         # Show hint based on mode
         if tts_mode == "local":
             st.caption(tr("tts.mode.local_hint"))
+        elif tts_mode == "doubao":
+            st.caption(tr("tts.mode.doubao_hint"))
         else:
             st.caption(tr("tts.mode.comfyui_hint"))
         
         # ================================================================
         # Local Mode UI
         # ================================================================
+
+        # Initialize variables (bound in each mode branch)
+        selected_voice = None
+        tts_speed = None
+        tts_pitch = None
+        tts_workflow_key = None
+        ref_audio_path = None
+
         if tts_mode == "local":
             # Import voice configuration
             from pixelle_video.tts_voices import EDGE_TTS_VOICES, get_voice_display_name
@@ -129,10 +140,78 @@ def render_style_config(pixelle_video):
                 )
                 st.caption(tr("tts.speed_label", speed=f"{tts_speed:.1f}"))
             
+                # Variables for video generation
+            tts_workflow_key = None
+            ref_audio_path = None
+            tts_pitch = None
+
+        # ================================================================
+        # Doubao Mode UI
+        # ================================================================
+        elif tts_mode == "doubao":
+            from pixelle_video.tts_voices import DOUBAO_TTS_VOICES, get_voice_display_name
+
+            doubao_config = tts_config.get("doubao", {})
+
+            # Check if credentials are configured
+            if not doubao_config.get("app_id") or not doubao_config.get("access_key"):
+                st.warning(tr("tts.doubao.not_configured"))
+
+            saved_voice = doubao_config.get("voice", "BV001_streaming")
+            saved_speed = doubao_config.get("speed", 1.0)
+            saved_pitch = doubao_config.get("pitch_ratio", 1.0)
+
+            # Build voice options with i18n
+            voice_options = []
+            voice_ids = []
+            default_voice_index = 0
+
+            for idx, voice_config in enumerate(DOUBAO_TTS_VOICES):
+                voice_id = voice_config["id"]
+                display_name = get_voice_display_name(voice_id, tr, get_language(), voice_list=DOUBAO_TTS_VOICES)
+                voice_options.append(display_name)
+                voice_ids.append(voice_id)
+                if voice_id == saved_voice:
+                    default_voice_index = idx
+
+            # Two-column layout: Voice | Speed/Pitch
+            voice_col, speed_col = st.columns([1, 1])
+
+            with voice_col:
+                selected_voice_display = st.selectbox(
+                    tr("tts.voice_selector"),
+                    voice_options,
+                    index=default_voice_index,
+                    key="tts_doubao_voice"
+                )
+                selected_voice_index = voice_options.index(selected_voice_display)
+                selected_voice = voice_ids[selected_voice_index]
+
+            with speed_col:
+                tts_speed = st.slider(
+                    tr("tts.speed"),
+                    min_value=0.5,
+                    max_value=2.0,
+                    value=saved_speed,
+                    step=0.1,
+                    format="%.1fx",
+                    key="tts_doubao_speed"
+                )
+                st.caption(tr("tts.speed_label", speed=f"{tts_speed:.1f}"))
+                tts_pitch = st.slider(
+                    tr("tts.pitch"),
+                    min_value=0.5,
+                    max_value=2.0,
+                    value=saved_pitch,
+                    step=0.1,
+                    key="tts_doubao_pitch"
+                )
+                st.caption(tr("tts.pitch_label", pitch=f"{tts_pitch:.1f}"))
+
             # Variables for video generation
             tts_workflow_key = None
             ref_audio_path = None
-        
+
         # ================================================================
         # ComfyUI Mode UI
         # ================================================================
@@ -218,6 +297,10 @@ def render_style_config(pixelle_video):
                         if tts_mode == "local":
                             tts_params["voice"] = selected_voice
                             tts_params["speed"] = tts_speed
+                        elif tts_mode == "doubao":
+                            tts_params["voice"] = selected_voice
+                            tts_params["speed"] = tts_speed
+                            tts_params["pitch_ratio"] = tts_pitch
                         else:  # comfyui
                             tts_params["workflow"] = tts_workflow_key
                             if ref_audio_path:
@@ -937,8 +1020,9 @@ def render_style_config(pixelle_video):
 
     return {
         "tts_inference_mode": tts_mode,
-        "tts_voice": selected_voice if tts_mode == "local" else None,
-        "tts_speed": tts_speed if tts_mode == "local" else None,
+        "tts_voice": selected_voice if tts_mode in ("local", "doubao") else None,
+        "tts_speed": tts_speed if tts_mode in ("local", "doubao") else None,
+        "tts_pitch_ratio": tts_pitch if tts_mode == "doubao" else None,
         "tts_workflow": tts_workflow_key if tts_mode == "comfyui" else None,
         "ref_audio": str(ref_audio_path) if ref_audio_path else None,
         "frame_template": frame_template,

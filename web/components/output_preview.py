@@ -54,6 +54,7 @@ def render_single_output(pixelle_video, video_params):
     tts_mode = video_params.get("tts_inference_mode", "local")
     selected_voice = video_params.get("tts_voice")
     tts_speed = video_params.get("tts_speed")
+    tts_pitch_ratio = video_params.get("tts_pitch_ratio")
     tts_workflow_key = video_params.get("tts_workflow")
     ref_audio_path = video_params.get("ref_audio")
     
@@ -153,9 +154,11 @@ def render_single_output(pixelle_video, video_params):
                 }
                 # Add TTS parameters based on mode
                 video_params["tts_inference_mode"] = tts_mode
-                if tts_mode == "local":
+                if tts_mode in ("local", "doubao"):
                     video_params["tts_voice"] = selected_voice
                     video_params["tts_speed"] = tts_speed
+                    if tts_mode == "doubao":
+                        video_params["tts_pitch_ratio"] = tts_pitch_ratio
                 else:  # comfyui
                     video_params["tts_workflow"] = tts_workflow_key
                     if ref_audio_path:

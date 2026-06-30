@@ -438,6 +438,7 @@ class DigitalHumanPipelineUI(PipelineUI):
             mode = video_params.get("mode")
             tts_voice = video_params.get("tts_voice", "zh-CN-YunjianNeural")
             tts_speed = video_params.get("tts_speed", 1.2)
+            tts_pitch_ratio = video_params.get("tts_pitch_ratio")
             
             logger.info(f"🔧 The obtained TTS parameters:")
             logger.info(f"  - tts_voice: {tts_voice}")
@@ -522,6 +523,7 @@ class DigitalHumanPipelineUI(PipelineUI):
                             tts_inference_mode = video_params.get("tts_inference_mode", "local")
                             tts_voice = video_params.get("tts_voice")
                             tts_speed = video_params.get("tts_speed")
+                            tts_pitch_ratio = video_params.get("tts_pitch_ratio")
                             tts_workflow = video_params.get("tts_workflow")
                             ref_audio = video_params.get("ref_audio")
 
@@ -530,9 +532,11 @@ class DigitalHumanPipelineUI(PipelineUI):
                                 "output_path": audio_path,
                                 "inference_mode": tts_inference_mode,
                             }
-                            if tts_inference_mode == "local":
+                            if tts_inference_mode in ("local", "doubao"):
                                 tts_kwargs["voice"] = tts_voice
                                 tts_kwargs["speed"] = tts_speed
+                                if tts_inference_mode == "doubao":
+                                    tts_kwargs["pitch_ratio"] = tts_pitch_ratio
                             elif tts_inference_mode == "comfyui":
                                 if tts_workflow:
                                     tts_kwargs["workflow"] = tts_workflow
@@ -614,6 +618,7 @@ class DigitalHumanPipelineUI(PipelineUI):
                             tts_inference_mode = video_params.get("tts_inference_mode", "local")
                             tts_voice = video_params.get("tts_voice")
                             tts_speed = video_params.get("tts_speed")
+                            tts_pitch_ratio = video_params.get("tts_pitch_ratio")
                             tts_workflow = video_params.get("tts_workflow")
                             ref_audio = video_params.get("ref_audio")
 
@@ -622,9 +627,11 @@ class DigitalHumanPipelineUI(PipelineUI):
                                 "output_path": audio_path,
                                 "inference_mode": tts_inference_mode
                             }
-                            if tts_inference_mode == "local":
+                            if tts_inference_mode in ("local", "doubao"):
                                 tts_kwargs["voice"] = tts_voice
                                 tts_kwargs["speed"] = tts_speed
+                                if tts_inference_mode == "doubao":
+                                    tts_kwargs["pitch_ratio"] = tts_pitch_ratio
                             elif tts_inference_mode == "comfyui":
                                 if tts_workflow:
                                     tts_kwargs["workflow"] = tts_workflow
