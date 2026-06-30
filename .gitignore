@@ -74,3 +74,6 @@ examples/
 repositories/
 
 *.out
+
+# Generated results
+pixelle_video/services/code/result/
