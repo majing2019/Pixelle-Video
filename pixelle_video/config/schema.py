@@ -69,12 +69,24 @@ class TTSComfyUIConfig(BaseModel):
     default_workflow: Optional[str] = Field(default=None, description="Default TTS workflow (optional)")
 
 
+class TTSDoubaoConfig(BaseModel):
+    """豆包 TTS 配置 (火山引擎)"""
+    app_id: str = Field(default="", description="火山引擎 App ID")
+    access_key: str = Field(default="", description="火山引擎 Access Key")
+    secret_key: str = Field(default="", description="火山引擎 Secret Key")
+    voice: str = Field(default="BV001_streaming", description="豆包 TTS 音色 ID")
+    speed: float = Field(default=1.0, ge=0.5, le=2.0, description="语速 (0.5-2.0)")
+    volume: float = Field(default=1.0, ge=0.5, le=2.0, description="音量 (0.5-2.0)")
+    pitch_ratio: float = Field(default=1.0, ge=0.5, le=2.0, description="音调 (0.5-2.0)")
+
+
 class TTSSubConfig(BaseModel):
     """TTS-specific configuration (under comfyui.tts)"""
-    inference_mode: str = Field(default="local", description="TTS inference mode: 'local' or 'comfyui'")
+    inference_mode: str = Field(default="local", description="TTS inference mode: 'local', 'comfyui', or 'doubao'")
     local: TTSLocalConfig = Field(default_factory=TTSLocalConfig, description="Local TTS (Edge TTS) configuration")
     comfyui: TTSComfyUIConfig = Field(default_factory=TTSComfyUIConfig, description="ComfyUI TTS configuration")
-    
+    doubao: TTSDoubaoConfig = Field(default_factory=TTSDoubaoConfig, description="豆包 TTS 配置")
+
     # Backward compatibility: keep default_workflow at top level
     @property
     def default_workflow(self) -> Optional[str]:

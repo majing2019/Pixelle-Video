@@ -122,6 +122,14 @@ class TTSService(ComfyBaseService):
                 speed=speed,
                 output_path=output_path
             )
+        elif mode == "doubao":
+            return await self._call_doubao_tts(
+                text=text,
+                voice=voice,
+                speed=speed,
+                output_path=output_path,
+                **params
+            )
         else:  # comfyui
             # 1. Resolve workflow (returns structured info)
             workflow_info = self._resolve_workflow(workflow=workflow)
@@ -193,7 +201,73 @@ class TTSService(ComfyBaseService):
         except Exception as e:
             logger.error(f"Local TTS generation error: {e}")
             raise
-    
+
+    async def _call_doubao_tts(
+        self,
+        text: str,
+        voice: Optional[str] = None,
+        speed: Optional[float] = None,
+        output_path: Optional[str] = None,
+        **params
+    ) -> str:
+        """
+        Generate speech using Doubao (Volcano Engine) TTS
+
+        Args:
+            text: Text to convert to speech
+            voice: Voice type ID (default: from config)
+            speed: Speech speed multiplier (default: from config)
+            output_path: Custom output path (auto-generated if None)
+            **params: Additional parameters (volume, pitch_ratio)
+
+        Returns:
+            Generated audio file path
+        """
+        from pixelle_video.utils.doubao_tts_util import doubao_tts
+
+        # Get doubao config
+        doubao_config = self.config.get("doubao", {})
+
+        # Determine parameters (param > config)
+        app_id = doubao_config.get("app_id", "")
+        access_key = doubao_config.get("access_key", "")
+        secret_key = doubao_config.get("secret_key", "")
+        final_voice = voice or doubao_config.get("voice", "BV001_streaming")
+        final_speed = speed if speed is not None else doubao_config.get("speed", 1.0)
+        final_volume = params.get("volume") or doubao_config.get("volume", 1.0)
+        final_pitch = params.get("pitch_ratio") or doubao_config.get("pitch_ratio", 1.0)
+
+        logger.info(
+            f"🎙️  Using Doubao TTS: voice={final_voice}, "
+            f"speed={final_speed}x, volume={final_volume}, pitch={final_pitch}"
+        )
+
+        # Generate output path if not provided
+        if not output_path:
+            unique_id = uuid.uuid4().hex
+            output_path = f"output/{unique_id}.mp3"
+            Path("output").mkdir(parents=True, exist_ok=True)
+
+        try:
+            await doubao_tts(
+                text=text,
+                app_id=app_id,
+                access_key=access_key,
+                secret_key=secret_key,
+                voice=final_voice,
+                speed=final_speed,
+                volume=final_volume,
+                pitch_ratio=final_pitch,
+                output_path=output_path,
+            )
+
+            logger.info(f"✅ Generated audio (Doubao TTS): {output_path}")
+            return output_path
+
+        except Exception as e:
+            logger.error(f"Doubao TTS generation error: {e}")
+            raise
+
     async def _call_comfyui_workflow(
         self,
         workflow_info: dict,

@@ -194,21 +194,111 @@ EDGE_TTS_VOICES: List[Dict[str, Any]] = [
     },
 ]
 
+# Doubao (火山引擎) TTS voice presets
+DOUBAO_TTS_VOICES: List[Dict[str, Any]] = [
+    # Chinese voices - general
+    {
+        "id": "BV001_streaming",
+        "label_key": "tts.doubao.BV001_streaming",
+        "locale": "zh",
+        "gender": "female"
+    },
+    {
+        "id": "BV002_streaming",
+        "label_key": "tts.doubao.BV002_streaming",
+        "locale": "zh",
+        "gender": "male"
+    },
+    {
+        "id": "BV003_streaming",
+        "label_key": "tts.doubao.BV003_streaming",
+        "locale": "zh",
+        "gender": "female"
+    },
+    {
+        "id": "BV004_streaming",
+        "label_key": "tts.doubao.BV004_streaming",
+        "locale": "zh",
+        "gender": "male"
+    },
+    # Chinese voices - dialectal
+    {
+        "id": "BV010_streaming",
+        "label_key": "tts.doubao.BV010_streaming",
+        "locale": "zh",
+        "gender": "female"
+    },
+    {
+        "id": "BV011_streaming",
+        "label_key": "tts.doubao.BV011_streaming",
+        "locale": "zh",
+        "gender": "female"
+    },
+    {
+        "id": "BV012_streaming",
+        "label_key": "tts.doubao.BV012_streaming",
+        "locale": "zh",
+        "gender": "male"
+    },
+    # Chinese voices - emotional/cute
+    {
+        "id": "BV007_streaming",
+        "label_key": "tts.doubao.BV007_streaming",
+        "locale": "zh",
+        "gender": "female"
+    },
+    {
+        "id": "BV020_streaming",
+        "label_key": "tts.doubao.BV020_streaming",
+        "locale": "zh",
+        "gender": "neutral"
+    },
+    # English voices
+    {
+        "id": "BV015_streaming",
+        "label_key": "tts.doubao.BV015_streaming",
+        "locale": "en",
+        "gender": "female"
+    },
+    {
+        "id": "BV016_streaming",
+        "label_key": "tts.doubao.BV016_streaming",
+        "locale": "en",
+        "gender": "male"
+    },
+    # Cantonese
+    {
+        "id": "BV013_streaming",
+        "label_key": "tts.doubao.BV013_streaming",
+        "locale": "yue",
+        "gender": "female"
+    },
+    {
+        "id": "BV014_streaming",
+        "label_key": "tts.doubao.BV014_streaming",
+        "locale": "yue",
+        "gender": "male"
+    },
+]
 
-def get_voice_display_name(voice_id: str, tr_func=None, locale: str = "zh_CN") -> str:
+
+def get_voice_display_name(voice_id: str, tr_func=None, locale: str = "zh_CN", voice_list=None) -> str:
     """
     Get display name for voice
-    
+
     Args:
         voice_id: Voice ID (e.g., "zh-CN-YunjianNeural")
         tr_func: Translation function (optional)
         locale: Current locale (default: "zh_CN")
-    
+        voice_list: Custom voice list to search (defaults to EDGE_TTS_VOICES)
+
     Returns:
         Display name (translated label if in Chinese, otherwise voice ID)
     """
+    # Use custom voice list if provided, otherwise default to EDGE_TTS_VOICES
+    voices = voice_list or EDGE_TTS_VOICES
     # Find voice config
-    voice_config = next((v for v in EDGE_TTS_VOICES if v["id"] == voice_id), None)
+    voice_config = next((v for v in voices if v["id"] == voice_id), None)
     
     if not voice_config:
         return voice_id
