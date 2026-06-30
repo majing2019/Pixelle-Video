@@ -195,96 +195,24 @@ EDGE_TTS_VOICES: List[Dict[str, Any]] = [
 ]
 
 # Doubao (火山引擎) TTS voice presets
-# Doubao (火山引擎) TTS voice presets
-# Note: Available voices depend on your Volcano Engine account tier.
-# Free tier typically only includes BV001_streaming (female).
-# Additional voices (BV002-BV700+) may require purchasing voice packs.
+# Available voices depend on your Volcano Engine account tier.
 # Check https://console.volcengine.com/speech/service/8 for your available voices.
 DOUBAO_TTS_VOICES: List[Dict[str, Any]] = [
-    # Chinese voices - general (confirmed working)
-    {
-        "id": "BV001_streaming",
-        "label_key": "tts.doubao.BV001_streaming",
-        "locale": "zh",
-        "gender": "female"
-    },
-    # Other commonly available voices (uncomment/add as needed):
-    # {
-    #     "id": "BV002_streaming",
-    #     "label_key": "tts.doubao.BV002_streaming",
-    #     "locale": "zh",
-    #     "gender": "male"
-    # },
-    # {
-    #     "id": "BV003_streaming",
-    #     "label_key": "tts.doubao.BV003_streaming",
-    #     "locale": "zh",
-    #     "gender": "female"
-    # },
-    # {
-    #     "id": "BV004_streaming",
-    #     "label_key": "tts.doubao.BV004_streaming",
-    #     "locale": "zh",
-    #     "gender": "male"
-    # },
-    # # Chinese voices - dialectal
-    # {
-    #     "id": "BV010_streaming",
-    #     "label_key": "tts.doubao.BV010_streaming",
-    #     "locale": "zh",
-    #     "gender": "female"
-    # },
-    # {
-    #     "id": "BV011_streaming",
-    #     "label_key": "tts.doubao.BV011_streaming",
-    #     "locale": "zh",
-    #     "gender": "female"
-    # },
-    # {
-    #     "id": "BV012_streaming",
-    #     "label_key": "tts.doubao.BV012_streaming",
-    #     "locale": "zh",
-    #     "gender": "male"
-    # },
-    # # Chinese voices - emotional/cute
-    # {
-    #     "id": "BV007_streaming",
-    #     "label_key": "tts.doubao.BV007_streaming",
-    #     "locale": "zh",
-    #     "gender": "female"
-    # },
-    # {
-    #     "id": "BV020_streaming",
-    #     "label_key": "tts.doubao.BV020_streaming",
-    #     "locale": "zh",
-    #     "gender": "neutral"
-    # },
-    # # English voices
-    # {
-    #     "id": "BV015_streaming",
-    #     "label_key": "tts.doubao.BV015_streaming",
-    #     "locale": "en",
-    #     "gender": "female"
-    # },
-    # {
-    #     "id": "BV016_streaming",
-    #     "label_key": "tts.doubao.BV016_streaming",
-    #     "locale": "en",
-    #     "gender": "male"
-    # },
-    # # Cantonese
-    # {
-    #     "id": "BV013_streaming",
-    #     "label_key": "tts.doubao.BV013_streaming",
-    #     "locale": "yue",
-    #     "gender": "female"
-    # },
-    # {
-    #     "id": "BV014_streaming",
-    #     "label_key": "tts.doubao.BV014_streaming",
-    #     "locale": "yue",
-    #     "gender": "male"
-    # },
+    {"id": "BV001_streaming", "label_key": "tts.doubao.BV001_streaming", "locale": "zh", "gender": "female"},
+    {"id": "BV002_streaming", "label_key": "tts.doubao.BV002_streaming", "locale": "zh", "gender": "male"},
+    {"id": "BV005_streaming", "label_key": "tts.doubao.BV005_streaming", "locale": "zh", "gender": "male"},
+    {"id": "BV007_streaming", "label_key": "tts.doubao.BV007_streaming", "locale": "zh", "gender": "female"},
+    {"id": "BV019_streaming", "label_key": "tts.doubao.BV019_streaming", "locale": "zh", "gender": "female"},
+    {"id": "BV021_streaming", "label_key": "tts.doubao.BV021_streaming", "locale": "zh", "gender": "female"},
+    {"id": "BV033_streaming", "label_key": "tts.doubao.BV033_streaming", "locale": "zh", "gender": "female"},
+    {"id": "BV034_streaming", "label_key": "tts.doubao.BV034_streaming", "locale": "zh", "gender": "male"},
+    {"id": "BV051_streaming", "label_key": "tts.doubao.BV051_streaming", "locale": "zh", "gender": "female"},
+    {"id": "BV056_streaming", "label_key": "tts.doubao.BV056_streaming", "locale": "zh", "gender": "male"},
+    {"id": "BV102_streaming", "label_key": "tts.doubao.BV102_streaming", "locale": "zh", "gender": "male"},
+    {"id": "BV113_streaming", "label_key": "tts.doubao.BV113_streaming", "locale": "zh", "gender": "female"},
+    {"id": "BV115_streaming", "label_key": "tts.doubao.BV115_streaming", "locale": "zh", "gender": "female"},
+    {"id": "BV119_streaming", "label_key": "tts.doubao.BV119_streaming", "locale": "zh", "gender": "male"},
+    {"id": "BV213_streaming", "label_key": "tts.doubao.BV213_streaming", "locale": "zh", "gender": "female"},
 ]
 
 
