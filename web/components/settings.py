@@ -319,6 +319,8 @@ def render_advanced_settings():
                         key="doubao_secret_key_input"
                     )
                 st.caption(tr("settings.doubao.hint"))
+                with st.expander(tr("settings.doubao.guide_title"), expanded=False):
+                    st.markdown(tr("settings.doubao.guide"))
 
         # ====================================================================
         # Direct API media providers
