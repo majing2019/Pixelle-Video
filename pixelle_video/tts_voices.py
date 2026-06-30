@@ -197,22 +197,31 @@ EDGE_TTS_VOICES: List[Dict[str, Any]] = [
 # Doubao (火山引擎) TTS voice presets
 # Available voices depend on your Volcano Engine account tier.
 # Check https://console.volcengine.com/speech/service/8 for your available voices.
+# Voice names from Volcano Engine official documentation
+# 场景: 通用 / 教育 / 客服 / 有声阅读 / 视频配音 / 方言 / 特色音色
 DOUBAO_TTS_VOICES: List[Dict[str, Any]] = [
-    {"id": "BV001_streaming", "label_key": "tts.doubao.BV001_streaming", "locale": "zh", "gender": "female"},
-    {"id": "BV002_streaming", "label_key": "tts.doubao.BV002_streaming", "locale": "zh", "gender": "male"},
-    {"id": "BV005_streaming", "label_key": "tts.doubao.BV005_streaming", "locale": "zh", "gender": "male"},
-    {"id": "BV007_streaming", "label_key": "tts.doubao.BV007_streaming", "locale": "zh", "gender": "female"},
-    {"id": "BV019_streaming", "label_key": "tts.doubao.BV019_streaming", "locale": "zh", "gender": "female"},
-    {"id": "BV021_streaming", "label_key": "tts.doubao.BV021_streaming", "locale": "zh", "gender": "female"},
-    {"id": "BV033_streaming", "label_key": "tts.doubao.BV033_streaming", "locale": "zh", "gender": "female"},
-    {"id": "BV034_streaming", "label_key": "tts.doubao.BV034_streaming", "locale": "zh", "gender": "male"},
-    {"id": "BV051_streaming", "label_key": "tts.doubao.BV051_streaming", "locale": "zh", "gender": "female"},
-    {"id": "BV056_streaming", "label_key": "tts.doubao.BV056_streaming", "locale": "zh", "gender": "male"},
-    {"id": "BV102_streaming", "label_key": "tts.doubao.BV102_streaming", "locale": "zh", "gender": "male"},
-    {"id": "BV113_streaming", "label_key": "tts.doubao.BV113_streaming", "locale": "zh", "gender": "female"},
-    {"id": "BV115_streaming", "label_key": "tts.doubao.BV115_streaming", "locale": "zh", "gender": "female"},
-    {"id": "BV119_streaming", "label_key": "tts.doubao.BV119_streaming", "locale": "zh", "gender": "male"},
-    {"id": "BV213_streaming", "label_key": "tts.doubao.BV213_streaming", "locale": "zh", "gender": "female"},
+    # 通用场景
+    {"id": "BV001_streaming", "label_key": "tts.doubao.BV001_streaming", "locale": "zh", "gender": "female", "category": "通用"},
+    {"id": "BV002_streaming", "label_key": "tts.doubao.BV002_streaming", "locale": "zh", "gender": "male",   "category": "通用"},
+    # 教育场景
+    {"id": "BV033_streaming", "label_key": "tts.doubao.BV033_streaming", "locale": "zh", "gender": "male",   "category": "教育"},
+    {"id": "BV034_streaming", "label_key": "tts.doubao.BV034_streaming", "locale": "zh", "gender": "female", "category": "教育"},
+    # 客服场景
+    {"id": "BV007_streaming", "label_key": "tts.doubao.BV007_streaming", "locale": "zh", "gender": "female", "category": "客服"},
+    # 视频配音
+    {"id": "BV005_streaming", "label_key": "tts.doubao.BV005_streaming", "locale": "zh", "gender": "female", "category": "视频配音"},
+    {"id": "BV056_streaming", "label_key": "tts.doubao.BV056_streaming", "locale": "zh", "gender": "male",   "category": "视频配音"},
+    # 有声阅读
+    {"id": "BV102_streaming", "label_key": "tts.doubao.BV102_streaming", "locale": "zh", "gender": "male",   "category": "有声阅读"},
+    {"id": "BV113_streaming", "label_key": "tts.doubao.BV113_streaming", "locale": "zh", "gender": "female", "category": "有声阅读"},
+    {"id": "BV115_streaming", "label_key": "tts.doubao.BV115_streaming", "locale": "zh", "gender": "female", "category": "有声阅读"},
+    {"id": "BV119_streaming", "label_key": "tts.doubao.BV119_streaming", "locale": "zh", "gender": "male",   "category": "有声阅读"},
+    # 特色音色
+    {"id": "BV051_streaming", "label_key": "tts.doubao.BV051_streaming", "locale": "zh", "gender": "neutral","category": "特色"},
+    # 方言
+    {"id": "BV019_streaming", "label_key": "tts.doubao.BV019_streaming", "locale": "zh-CQ", "gender": "male",   "category": "方言"},
+    {"id": "BV021_streaming", "label_key": "tts.doubao.BV021_streaming", "locale": "zh-DB", "gender": "male",   "category": "方言"},
+    {"id": "BV213_streaming", "label_key": "tts.doubao.BV213_streaming", "locale": "zh-GX", "gender": "male",   "category": "方言"},
 ]
 
 
