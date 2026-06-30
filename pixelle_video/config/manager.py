@@ -136,6 +136,16 @@ class ConfigManager:
             "runninghub_instance_type": self.config.comfyui.runninghub_instance_type,
             "tts": {
                 "default_workflow": self.config.comfyui.tts.default_workflow,
+                "inference_mode": self.config.comfyui.tts.inference_mode,
+                "doubao": {
+                    "app_id": self.config.comfyui.tts.doubao.app_id,
+                    "access_key": self.config.comfyui.tts.doubao.access_key,
+                    "secret_key": self.config.comfyui.tts.doubao.secret_key,
+                    "voice": self.config.comfyui.tts.doubao.voice,
+                    "speed": self.config.comfyui.tts.doubao.speed,
+                    "volume": self.config.comfyui.tts.doubao.volume,
+                    "pitch_ratio": self.config.comfyui.tts.doubao.pitch_ratio,
+                },
             },
             "image": {
                 "default_workflow": self.config.comfyui.image.default_workflow,
@@ -154,6 +164,36 @@ class ConfigManager:
     def set_api_provider_config(self, provider: str, updates: dict):
         """Set configuration for a direct API provider"""
         self.update({"api_providers": {provider: updates}})
+
+    def set_doubao_tts_config(
+        self,
+        app_id: Optional[str] = None,
+        access_key: Optional[str] = None,
+        secret_key: Optional[str] = None,
+        voice: Optional[str] = None,
+        speed: Optional[float] = None,
+        volume: Optional[float] = None,
+        pitch_ratio: Optional[float] = None,
+    ):
+        """Set Doubao TTS configuration"""
+        updates = {}
+        if app_id is not None:
+            updates["app_id"] = app_id
+        if access_key is not None:
+            updates["access_key"] = access_key
+        if secret_key is not None:
+            updates["secret_key"] = secret_key
+        if voice is not None:
+            updates["voice"] = voice
+        if speed is not None:
+            updates["speed"] = speed
+        if volume is not None:
+            updates["volume"] = volume
+        if pitch_ratio is not None:
+            updates["pitch_ratio"] = pitch_ratio
+
+        if updates:
+            self.update({"comfyui": {"tts": {"doubao": updates}}})
     
     def set_comfyui_config(
         self, 

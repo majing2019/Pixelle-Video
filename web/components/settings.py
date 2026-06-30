@@ -290,6 +290,36 @@ def render_advanced_settings():
                     # Convert display value back to actual value
                     runninghub_48g_enabled = runninghub_instance_type_display == tr("settings.comfyui.runninghub_instance_48g")
 
+                st.markdown("---")
+
+                # Doubao TTS configuration
+                st.markdown(f"**{tr('settings.doubao.title')}**")
+                doubao_tts_config = comfyui_config.get("tts", {}).get("doubao", {})
+                doubao_app_id = st.text_input(
+                    tr("settings.doubao.app_id"),
+                    value=doubao_tts_config.get("app_id", ""),
+                    help=tr("settings.doubao.app_id_help"),
+                    key="doubao_app_id_input"
+                )
+                doubao_col1, doubao_col2 = st.columns(2)
+                with doubao_col1:
+                    doubao_access_key = st.text_input(
+                        tr("settings.doubao.access_key"),
+                        value=doubao_tts_config.get("access_key", ""),
+                        type="password",
+                        help=tr("settings.doubao.access_key_help"),
+                        key="doubao_access_key_input"
+                    )
+                with doubao_col2:
+                    doubao_secret_key = st.text_input(
+                        tr("settings.doubao.secret_key"),
+                        value=doubao_tts_config.get("secret_key", ""),
+                        type="password",
+                        help=tr("settings.doubao.secret_key_help"),
+                        key="doubao_secret_key_input"
+                    )
+                st.caption(tr("settings.doubao.hint"))
+
         # ====================================================================
         # Direct API media providers
         # ====================================================================
@@ -451,6 +481,13 @@ def render_advanced_settings():
                         runninghub_api_key=runninghub_api_key if runninghub_api_key else None,
                         runninghub_concurrent_limit=int(runninghub_concurrent_limit),
                         runninghub_instance_type=instance_type
+                    )
+
+                    # Save Doubao TTS configuration
+                    config_manager.set_doubao_tts_config(
+                        app_id=doubao_app_id or "",
+                        access_key=doubao_access_key or "",
+                        secret_key=doubao_secret_key or "",
                     )
 
                     # Save direct image/video API provider configuration.
