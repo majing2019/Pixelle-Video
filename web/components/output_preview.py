@@ -167,6 +167,10 @@ def render_single_output(pixelle_video, video_params):
                 # Add custom template parameters if any
                 if custom_values_for_video:
                     video_params["template_params"] = custom_values_for_video
+
+                # Add per-scene template overrides if any
+                if video_params.get("frame_template_overrides"):
+                    video_params["frame_template_overrides"] = video_params["frame_template_overrides"]
                 
                 result = run_async(pixelle_video.generate_video(**video_params))
                 
@@ -271,6 +275,7 @@ def render_batch_output(pixelle_video, video_params):
                 "tts_inference_mode": video_params.get("tts_inference_mode") or "local",
                 "media_width": video_params.get("media_width"),
                 "media_height": video_params.get("media_height"),
+                "frame_template_overrides": video_params.get("frame_template_overrides"),
             }
             # Add TTS parameters based on mode (only add non-None values)
             if shared_config["tts_inference_mode"] == "local":
