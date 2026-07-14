@@ -486,16 +486,33 @@ class APIProviderMediaService:
         session_id = params.get("session_id") or "pixelle"
 
         logger.info(f"Generating image via API provider={provider}, model={model}")
-        paths = await asyncio.to_thread(
-            client.generate_image,
-            prompt=prompt,
-            image_paths=image_paths,
-            model=model,
-            save_dir=save_dir,
-            session_id=session_id,
-            video_ratio=ratio,
-            resolution=resolution,
-        )
+
+        mask_path = params.pop("mask_path", None)
+
+        if mask_path and image_paths:
+            # Inpaint mode: pass original image + mask separately
+            paths = await asyncio.to_thread(
+                client.inpaint_image,
+                prompt=prompt,
+                image_path=image_paths[0],
+                mask_path=mask_path,
+                model=model,
+                save_dir=save_dir,
+                session_id=session_id,
+                video_ratio=ratio,
+                resolution=resolution,
+            )
+        else:
+            paths = await asyncio.to_thread(
+                client.generate_image,
+                prompt=prompt,
+                image_paths=image_paths,
+                model=model,
+                save_dir=save_dir,
+                session_id=session_id,
+                video_ratio=ratio,
+                resolution=resolution,
+            )
 
         if not paths:
             raise RuntimeError(f"API image generation returned no result: provider={provider}, model={model}")

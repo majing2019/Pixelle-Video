@@ -274,3 +274,110 @@ class ImageClient:
                 raise RuntimeError(f"DashScope generation failed: {e}") from e
 
         return generated_local_paths
+
+    def inpaint_image(self,
+                      prompt: str,
+                      image_path: str,
+                      mask_path: str,
+                      model: str = "wan2.7-image",
+                      save_dir: Optional[str] = None,
+                      session_id: Optional[str] = None,
+                      video_ratio: Optional[str] = "1:1",
+                      resolution: Optional[str] = "1080P") -> List[str]:
+        """
+        Inpaint an image by regenerating the masked area.
+
+        Args:
+            prompt: Text prompt describing what to fill in the masked area.
+            image_path: Local file path or URL of the original image.
+            mask_path: Local file path of the black-and-white mask (white = inpaint area).
+            model: Model name to determine provider.
+            save_dir: Custom directory to save results.
+            session_id: Session ID for organizing files.
+            video_ratio: Aspect ratio.
+            resolution: Resolution string.
+
+        Returns:
+            List of absolute file paths of the inpainted images.
+        """
+        size_map = {
+            "16:9": {"720P": "1280*720", "1080P": "1920*1080", "2K": "2560*1440", "4K": "3840*2160"},
+            "9:16": {"720P": "720*1280", "1080P": "1080*1920", "2K": "1440*2560", "4K": "2160*3840"},
+            "4:3": {"720P": "960*720", "1080P": "1440*1080", "2K": "2560*1920", "4K": "3840*2880"},
+            "3:4": {"720P": "720*960", "1080P": "1080*1440", "2K": "1920*2560", "4K": "2880*3840"},
+            "1:1": {"720P": "720*720", "1080P": "1080*1080", "2K": "2560*2560", "4K": "3840*3840"},
+        }
+        size = size_map.get(video_ratio, size_map["1:1"]).get(resolution, "1024*1024")
+
+        if not model:
+            model = "wan2.7-image"
+
+        if not save_dir:
+            if session_id:
+                save_dir = os.path.join(self.base_save_dir, session_id)
+            else:
+                save_dir = self.base_save_dir
+        os.makedirs(save_dir, exist_ok=True)
+
+        generated_local_paths = []
+
+        # Format file paths to file:// URIs for DashScope
+        def _to_file_url(p: str) -> str:
+            if p.startswith("http") or p.startswith("file://"):
+                return p
+            return f"file://{os.path.abspath(p)}"
+
+        image_url = _to_file_url(image_path)
+        mask_url = _to_file_url(mask_path)
+
+        is_seedream = "seedream" in model.lower()
+        is_sora = "sora" in model.lower() or "gpt" in model.lower()
+
+        if is_seedream:
+            # Seedream uses its own API format
+            try:
+                logging.info(f"ImageClient requesting Seedream inpaint: {model}")
+                # Seedream may not support inpaint directly; fall through to edit_image
+                paths = self.seedream_client.generate_image(
+                    prompt=prompt,
+                    model=model,
+                    session_id=session_id or "default",
+                    size=size or "1024*1024",
+                    image_paths=[image_url, mask_url],
+                )
+                if paths:
+                    generated_local_paths.extend(paths)
+            except Exception as e:
+                logging.error(f"Seedream inpaint failed: {e}")
+
+        elif is_sora:
+            logging.warning("GPT/OpenAI models do not support inpainting. Falling back to edit.")
+            paths = self.gpt_client.generate_image(
+                prompt=prompt,
+                size=size.replace("*", "x"),
+                model=model,
+                save_dir=save_dir,
+            )
+            if paths and os.path.exists(paths[0]):
+                generated_local_paths.append(paths[0])
+
+        else:
+            # DashScope inpaint
+            try:
+                logging.info(f"ImageClient requesting DashScope inpaint: {model}")
+                paths = self.dashscope_client.inpaint_image(
+                    prompt=prompt,
+                    image_url=image_url,
+                    mask_url=mask_url,
+                    model=model,
+                    size=size,
+                    session_id=session_id,
+                    save_dir=save_dir,
+                )
+                if paths:
+                    generated_local_paths.extend(paths)
+            except Exception as e:
+                logging.error(f"DashScope inpaint failed: {e}")
+                raise RuntimeError(f"DashScope inpaint failed: {e}") from e
+
+        return generated_local_paths

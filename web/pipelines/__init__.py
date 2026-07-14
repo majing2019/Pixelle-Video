@@ -30,6 +30,8 @@ from web.pipelines import digital_human
 from web.pipelines import i2v
 from web.pipelines import action_transfer
 from web.pipelines import text_to_image
+from web.pipelines import img2img
+from web.pipelines import inpaint
 
 __all__ = [
     "PipelineUI",

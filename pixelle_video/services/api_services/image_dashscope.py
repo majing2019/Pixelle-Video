@@ -188,6 +188,67 @@ class DashScopeClient:
             logging.error(f"Error in edit_image: {e}")
             raise
 
+    def inpaint_image(self, prompt, image_url, mask_url, model="wan2.7-image", size="1024*1024", n=1, session_id=None, save_dir=None):
+        """
+        Image inpainting using DashScope ImageGeneration.
+
+        Args:
+            prompt: Text prompt describing what to generate in the masked area.
+            image_url: Original image URL or file:// path.
+            mask_url: Mask image URL or file:// path (white = inpaint area).
+            model: DashScope model name.
+            size: Output image size (e.g. "1024*1024").
+            n: Number of images to generate.
+            session_id: Session ID for file naming.
+            save_dir: Directory to save downloaded results.
+        """
+        if ImageGeneration is None:
+            raise RuntimeError("dashscope package not installed. Run: pip install dashscope")
+
+        messages = [
+            {
+                "role": "user",
+                "content": [
+                    {"image": image_url},
+                    {"image": mask_url},
+                    {"text": prompt},
+                ]
+            }
+        ]
+
+        try:
+            with self._proxy_env():
+                response = ImageGeneration.call(
+                    model=model,
+                    api_key=self.api_key,
+                    messages=messages,
+                    n=n,
+                    size=size,
+                    watermark=False,
+                )
+
+            if response.status_code == 200:
+                results = self._extract_image_urls(getattr(response, "output", None))
+                if not results:
+                    raise RuntimeError(f"DashScope inpaint returned no image URLs. output={getattr(response, 'output', None)}")
+
+                if save_dir:
+                    os.makedirs(save_dir, exist_ok=True)
+                    local_files = []
+                    for i, url in enumerate(results):
+                        file_name = f"ds_inpaint_{session_id if session_id else 'nosess'}_{int(time.time())}_{i}_{uuid.uuid4().hex[:6]}.png"
+                        file_path = os.path.join(save_dir, file_name)
+                        if self.image_processor.download_image(url, file_path):
+                            local_files.append(file_path)
+                    return local_files
+
+                return results
+            else:
+                raise RuntimeError(f"Image inpaint failed: {response.code}, {response.message}, status={response.status_code}")
+        except Exception as e:
+            logging.error(f"Error in inpaint_image: {e}")
+            raise
+
 
 if __name__ == "__main__":
     import sys
