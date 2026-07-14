@@ -154,13 +154,17 @@ async def generate_video_sync(
         # Add custom template parameters if specified
         if request_body.template_params:
             video_params["template_params"] = request_body.template_params
-        
+
+        # Add per-scene template overrides if specified
+        if request_body.frame_template_overrides:
+            video_params["frame_template_overrides"] = request_body.frame_template_overrides
+
         # Call video generator service
         result = await pixelle_video.generate_video(**video_params)
-        
+
         # Get file size
         file_size = os.path.getsize(result.video_path) if os.path.exists(result.video_path) else 0
-        
+
         # Convert path to URL
         video_url = path_to_url(request, result.video_path)
         
@@ -259,9 +263,13 @@ async def generate_video_async(
             # Add custom template parameters if specified
             if request_body.template_params:
                 video_params["template_params"] = request_body.template_params
-            
+
+            # Add per-scene template overrides if specified
+            if request_body.frame_template_overrides:
+                video_params["frame_template_overrides"] = request_body.frame_template_overrides
+
             result = await pixelle_video.generate_video(**video_params)
-            
+
             # Get file size
             file_size = os.path.getsize(result.video_path) if os.path.exists(result.video_path) else 0
             

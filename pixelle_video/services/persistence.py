@@ -386,6 +386,7 @@ class PersistenceService:
             "video_path": frame.video_path,
             "composed_image_path": frame.composed_image_path,
             "video_segment_path": frame.video_segment_path,
+            "frame_template": frame.frame_template,
             "duration": frame.duration,
             "created_at": frame.created_at.isoformat() if frame.created_at else None,
         }
@@ -402,6 +403,7 @@ class PersistenceService:
             video_path=data.get("video_path"),
             composed_image_path=data.get("composed_image_path"),
             video_segment_path=data.get("video_segment_path"),
+            frame_template=data.get("frame_template"),
             duration=data.get("duration", 0.0),
             created_at=datetime.fromisoformat(data["created_at"]) if data.get("created_at") else None,
         )
