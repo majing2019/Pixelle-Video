@@ -347,8 +347,16 @@ class FrameProcessor:
         from pixelle_video.services.frame_html import HTMLFrameGenerator
         from pixelle_video.utils.template_util import resolve_template_path
         
-        # Resolve template path (handles various input formats)
-        template_path = resolve_template_path(config.frame_template)
+        # Resolve template path: frame-level → config overrides → global default
+        frame_template = frame.frame_template
+        if not frame_template and config.frame_template_overrides:
+            frame_template = config.frame_template_overrides.get(frame.index)
+        if not frame_template:
+            frame_template = config.frame_template
+        template_path = resolve_template_path(frame_template)
+
+        if frame_template != config.frame_template:
+            logger.debug(f"Frame {frame.index} using override template: {frame_template}")
         
         # Get content metadata from storyboard
         content_metadata = storyboard.content_metadata if storyboard else None
