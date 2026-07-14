@@ -348,6 +348,7 @@ class PersistenceService:
             "media_workflow": config.media_workflow,
             "frame_template": config.frame_template,
             "template_params": config.template_params,
+            "frame_template_overrides": config.frame_template_overrides,
         }
     
     def _dict_to_config(self, data: Dict[str, Any]) -> StoryboardConfig:
@@ -370,6 +371,7 @@ class PersistenceService:
             media_workflow=data.get("media_workflow", data.get("image_workflow")),  # Backward compatibility
             frame_template=data.get("frame_template", "1080x1920/default.html"),
             template_params=data.get("template_params"),
+            frame_template_overrides=data.get("frame_template_overrides"),
         )
     
     def _frame_to_dict(self, frame: StoryboardFrame) -> Dict[str, Any]:

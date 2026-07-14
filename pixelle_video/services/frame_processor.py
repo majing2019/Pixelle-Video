@@ -207,7 +207,13 @@ class FrameProcessor:
         # video_* templates can also use direct API video workflows.
         workflow_name = config.media_workflow or ""
         from pixelle_video.utils.template_util import get_template_type
-        template_type = get_template_type(config.frame_template or "")
+        # Check per-frame template override for media type
+        effective_template = frame.frame_template
+        if not effective_template and config.frame_template_overrides:
+            effective_template = config.frame_template_overrides.get(frame.index)
+        if not effective_template:
+            effective_template = config.frame_template
+        template_type = get_template_type(effective_template or "")
         is_video_workflow = "video_" in workflow_name.lower() or template_type == "video"
         media_type = "video" if is_video_workflow else "image"
         
