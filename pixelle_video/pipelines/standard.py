@@ -270,9 +270,20 @@ class StandardPipeline(LinearVideoPipeline):
             media_workflow=ctx.params.get("media_workflow"),
             api_video_params=ctx.params.get("api_video_params"),
             frame_template=ctx.params.get("frame_template") or "1080x1920/default.html",
-            template_params=ctx.params.get("template_params")
+            template_params=ctx.params.get("template_params"),
+            frame_template_overrides=ctx.params.get("frame_template_overrides"),
         )
-        
+
+        # Validate all templates share the same resolution directory
+        all_templates = [ctx.config.frame_template]
+        if ctx.config.frame_template_overrides:
+            all_templates.extend(ctx.config.frame_template_overrides.values())
+        resolutions = {t.split("/")[0] for t in all_templates if "/" in t}
+        if len(resolutions) > 1:
+            raise ValueError(
+                f"All templates must share the same resolution. Found: {resolutions}"
+            )
+
         # Create storyboard
         ctx.storyboard = Storyboard(
             title=ctx.title,
