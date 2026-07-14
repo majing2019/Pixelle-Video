@@ -59,6 +59,7 @@ def render_single_output(pixelle_video, video_params):
     ref_audio_path = video_params.get("ref_audio")
     
     frame_template = video_params.get("frame_template")
+    frame_template_overrides = video_params.get("frame_template_overrides")
     custom_values_for_video = video_params.get("template_params", {})
     workflow_key = video_params.get("media_workflow")
     api_video_params = video_params.get("api_video_params")
@@ -169,8 +170,8 @@ def render_single_output(pixelle_video, video_params):
                     video_params["template_params"] = custom_values_for_video
 
                 # Add per-scene template overrides if any
-                if video_params.get("frame_template_overrides"):
-                    video_params["frame_template_overrides"] = video_params["frame_template_overrides"]
+                if frame_template_overrides:
+                    video_params["frame_template_overrides"] = frame_template_overrides
                 
                 result = run_async(pixelle_video.generate_video(**video_params))
                 
