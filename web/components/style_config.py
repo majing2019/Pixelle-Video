@@ -604,13 +604,17 @@ def render_style_config(pixelle_video):
             override_options = {tr("template.follow_global"): None}
             for size_key, templates in grouped.items():
                 for tmpl in templates:
-                    override_options[tmpl.display_info.name] = tmpl.template_path
+                    # Use template_path as key to avoid display name collisions
+                    label = f"{tmpl.display_info.name} ({size_key})"
+                    override_options[label] = tmpl.template_path
 
             # Show per-scene template selectors
             narrations = st.session_state.get("narrations", [])
-            n_scenes = len(narrations) if narrations else 5
+            n_scenes = len(narrations) if narrations else 0
 
             with st.expander(tr("template.mix_mode"), expanded=True):
+                if n_scenes == 0:
+                    st.info("💡 请先在左侧输入文案并生成旁白，再为场景分配模板")
                 for i in range(n_scenes):
                     col_num, col_tmpl = st.columns([1, 4])
                     with col_num:

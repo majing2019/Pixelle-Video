@@ -154,11 +154,22 @@ class StandardPipeline(LinearVideoPipeline):
     async def plan_visuals(self, ctx: PipelineContext):
         """Step 4: Generate image prompts or visual descriptions."""
         # Detect template type to determine if media generation is needed
+        # Check both global template and any per-scene overrides
         frame_template = ctx.params.get("frame_template") or "1080x1920/default.html"
-        
+        overrides = ctx.params.get("frame_template_overrides") or {}
+
         template_name = Path(frame_template).name
         template_type = get_template_type(template_name)
         template_requires_media = (template_type in ["image", "video"])
+
+        # If any override uses a media-requiring template, we must generate images
+        if not template_requires_media:
+            for override_path in overrides.values():
+                override_type = get_template_type(Path(override_path).name)
+                if override_type in ("image", "video"):
+                    template_requires_media = True
+                    logger.info(f"🎨 Override template '{override_path}' requires media generation")
+                    break
         
         if template_type == "image":
             logger.info(f"📸 Template requires image generation")
