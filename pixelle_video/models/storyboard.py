@@ -53,6 +53,8 @@ class StoryboardConfig:
     # Frame template (includes size information in path)
     frame_template: str = "1080x1920/default.html"  # Template path with size (e.g., "1080x1920/default.html")
     template_params: Optional[Dict[str, Any]] = None  # Custom template parameters (e.g., {"accent_color": "#ff0000"})
+    # Multi-template mixing: per-scene template overrides {scene_index: template_path}
+    frame_template_overrides: Optional[Dict[int, str]] = None
 
 
 @dataclass
@@ -70,7 +72,8 @@ class StoryboardFrame:
     composed_image_path: Optional[str] = None  # Composed image path (with subtitles, for image type)
     video_segment_path: Optional[str] = None   # Final video segment path
     
-    # Metadata
+    # Per-scene template override (None = use config default)
+    frame_template: Optional[str] = None
     duration: float = 0.0                      # Frame duration (seconds, from audio or video)
     created_at: Optional[datetime] = None
     
