@@ -75,6 +75,14 @@ class VideoGenerateRequest(BaseModel):
         description="Custom template parameters (e.g., {'accent_color': '#ff0000', 'background': 'url'}). "
                     "Available parameters depend on the template. Use GET /api/templates/{template_path}/params to discover them."
     )
+
+    # === Per-Scene Template Overrides (Multi-Template Mixing) ===
+    frame_template_overrides: Optional[Dict[int, str]] = Field(
+        None,
+        description="Per-scene template overrides for multi-template mixing. "
+                    "{scene_index: template_path}. e.g., {2: '1080x1920/image_excerpt.html', 4: '1080x1920/image_healing.html'}. "
+                    "Unspecified scenes use frame_template."
+    )
     
     # === Image Style ===
     prompt_prefix: Optional[str] = Field(None, description="Image style prefix")
@@ -93,6 +101,10 @@ class VideoGenerateRequest(BaseModel):
                 "template_params": {
                     "accent_color": "#3498db",
                     "background": "https://example.com/custom-bg.jpg"
+                },
+                "frame_template_overrides": {
+                    "2": "1080x1920/image_excerpt.html",
+                    "4": "1080x1920/image_healing.html"
                 },
                 "title": "The Power of Atomic Habits"
             }
