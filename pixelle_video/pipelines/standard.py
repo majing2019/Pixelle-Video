@@ -171,11 +171,12 @@ class StandardPipeline(LinearVideoPipeline):
                     logger.info(f"🎨 Override template '{override_path}' requires media generation")
                     break
         
-        if template_type == "image":
-            logger.info(f"📸 Template requires image generation")
-        elif template_type == "video":
-            logger.info(f"🎬 Template requires video generation")
-        else:  # static
+        if template_requires_media:
+            if template_type == "video":
+                logger.info(f"🎬 Template requires video generation")
+            else:
+                logger.info(f"📸 Template requires image generation")
+        else:
             logger.info(f"⚡ Static template - skipping media generation pipeline")
             logger.info(f"   💡 Benefits: Faster generation + Lower cost + No ComfyUI dependency")
         
