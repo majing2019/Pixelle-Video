@@ -664,6 +664,11 @@
     "inpaint.download": "⬇️ Download",
     "inpaint.regenerate": "🔄 Regenerate",
 
+    "template.mix_mode": "🎨 Mix Mode",
+    "template.mix_mode_help": "Enable to assign different templates to each scene",
+    "template.scene_template": "Scene {index} Template",
+    "template.follow_global": "Follow Global Template",
+
     "faq.expand_to_view": "FAQ",
     "faq.load_error": "Failed to load FAQ content",
     "faq.more_help": "Need more help?",

@@ -664,6 +664,11 @@
     "inpaint.download": "⬇️ 下载",
     "inpaint.regenerate": "🔄 重新生成",
 
+    "template.mix_mode": "🎨 混剪模式",
+    "template.mix_mode_help": "开启后可为每个场景选择不同的模板",
+    "template.scene_template": "场景 {index} 模板",
+    "template.follow_global": "跟随全局模板",
+
     "faq.expand_to_view": "常见问题",
     "faq.load_error": "无法加载常见问题内容",
     "faq.more_help": "需要更多帮助？",

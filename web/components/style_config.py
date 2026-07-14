@@ -586,7 +586,52 @@ def render_style_config(pixelle_video):
             
         if selected_template_name:
             st.info(f"📋 {tr('template.selected_template')}: **{selected_template_name}**")
-        
+
+
+        # === Multi-Template Mix Mode ===
+        mix_mode = st.toggle(
+            tr("template.mix_mode"),
+            value=st.session_state.get("template_mix_mode", False),
+            key="template_mix_mode",
+            help=tr("template.mix_mode_help")
+        )
+
+        frame_template_overrides = {}
+        if mix_mode:
+            # Collect template names for the override selector from same size/type
+            grouped = get_templates_grouped_by_size_and_type(selected_template_type)
+
+            override_options = {tr("template.follow_global"): None}
+            for size_key, templates in grouped.items():
+                for tmpl in templates:
+                    override_options[tmpl.display_info.name] = tmpl.template_path
+
+            # Show per-scene template selectors
+            narrations = st.session_state.get("narrations", [])
+            n_scenes = len(narrations) if narrations else 5
+
+            with st.expander(tr("template.mix_mode"), expanded=True):
+                for i in range(n_scenes):
+                    col_num, col_tmpl = st.columns([1, 4])
+                    with col_num:
+                        st.markdown(f"**{tr('template.scene_template', index=i+1)}**")
+                    with col_tmpl:
+                        selected = st.selectbox(
+                            f"scene_{i}_template",
+                            options=list(override_options.keys()),
+                            key=f"scene_template_{i}",
+                            label_visibility="collapsed"
+                        )
+                        template_val = override_options.get(selected)
+                        if template_val is not None:
+                            frame_template_overrides[i] = template_val
+
+            if frame_template_overrides:
+                st.caption(f"📝 {len(frame_template_overrides)} scene(s) using custom templates")
+        else:
+            frame_template_overrides = None
+
+        st.session_state['frame_template_overrides'] = frame_template_overrides
 
         # Display video size from template
         from pixelle_video.utils.template_util import parse_template_size
@@ -1027,6 +1072,7 @@ def render_style_config(pixelle_video):
         "ref_audio": str(ref_audio_path) if ref_audio_path else None,
         "frame_template": frame_template,
         "template_params": custom_values_for_video if custom_values_for_video else None,
+        "frame_template_overrides": frame_template_overrides,
         "media_workflow": final_media_workflow,
         "api_video_params": api_video_params if template_media_type == "video" else None,
         "prompt_prefix": prompt_prefix if prompt_prefix else "",
